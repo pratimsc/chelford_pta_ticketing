@@ -1,6 +1,6 @@
 package chelford.ticketing
 
-import java.io.{File, FileOutputStream, OutputStream}
+import java.io.{File, FileOutputStream, OutputStream, Writer}
 import java.nio.charset.StandardCharsets
 import java.text.DecimalFormat
 import java.util.UUID
@@ -13,6 +13,7 @@ import net.glxn.qrgen.javase.QRCode
 import org.joda.time.format.DateTimeFormat
 import slick.driver.PostgresDriver.backend.DatabaseDef
 
+import scala.collection.immutable.IndexedSeq
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -133,15 +134,37 @@ object TicketManager {
     fout.close()
   }
 
-  def writeToCSVFile(tickets: List[Ticket])(implicit out: OutputStream) = {
+  def writeToCSVFile(tickets: List[Ticket], groupQuantity: Int = 5)(implicit out: Writer) = {
 
     def ticketToCsv(ticket: Ticket): String =
-      s""""${ticket.ticket_id}","${ticket.ticket_type}","${ticket.description}","${f"${ticket.price}%1.2f"}","${DateTimeFormat.forPattern("MM/dd/yyyy").print(ticket.event_date)}","/tmp/chelford_pta/scribus/qrcodes/${ticket.ticket_id}.png"${'\n'}"""
+      s""""${ticket.ticket_id}","${ticket.ticket_type}","${ticket.description}","${f"${ticket.price}%1.2f"}","${DateTimeFormat.forPattern("MM/dd/yyyy").print(ticket.event_date)}","/tmp/chelford_pta/scribus/qrcodes/${ticket.ticket_id}.png""""
     //Write Header
-    out.write(s""""uuid","t_type","t_desc", "t_price","e_date","qrcode"${'\n'}""".getBytes)
+    def ticketToCsvHeader(groupIndex: Int) =
+      s""""uuid_${groupIndex}","t_type_${groupIndex}","t_desc_${groupIndex}", "t_price_${groupIndex}","e_date_${groupIndex}","qrcode_${groupIndex}""""
 
-    tickets.map { t =>
-      out.write(ticketToCsv(t).getBytes)
+    //Get the full header list
+    val hl: IndexedSeq[String] = for (i <- 1 to groupQuantity) yield ticketToCsvHeader(i)
+    val header: String = hl.mkString(",")
+
+    val groupedTckt: List[List[Ticket]] = tickets.foldLeft(List[List[Ticket]]()) { (gl, t) =>
+      gl match {
+        case h :: tail =>
+          if (h.length < groupQuantity) (t :: h) :: tail
+          else
+            List(t) :: (h :: tail)
+        case Nil => List(List(t))
+      }
+    }
+
+    val data = groupedTckt.map(t => t.map(ticketToCsv).mkString(",")) //Converts a list of tickets to horizontal comma separated data
+
+    //Write the data to output stream
+    out.write(header)
+    out.write("\n")
+    data.map{ d =>
+      out.write(d)
+      out.write("\n")
+      //out.write(0x0A)
     }
   }
 }

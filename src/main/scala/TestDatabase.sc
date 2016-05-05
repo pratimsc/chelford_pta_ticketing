@@ -1,4 +1,4 @@
-import java.io.{File, FileOutputStream}
+import java.io.{File, FileOutputStream, OutputStreamWriter}
 import java.nio.charset.StandardCharsets
 import java.text.DecimalFormat
 import java.util.UUID
@@ -23,7 +23,8 @@ val tl_cc1: List[Ticket] = TicketManager.generateTickets(250, "CC1", "Child Hog 
 val tl_cc2: List[Ticket] = TicketManager.generateTickets(250, "CC2", "Child Hot Dog (Pre-Book)", 1.00, new DateTime(2016, 6, 11, 0, 0, 0)).map(TicketManager.enrichTicketWithQrCode)
 val tl_cn1: List[Ticket] = TicketManager.generateTickets(250, "CN1", "Child Hog Roast", 2.00, new DateTime(2016, 6, 11, 0, 0, 0)).map(TicketManager.enrichTicketWithQrCode)
 val tl_cn2: List[Ticket] = TicketManager.generateTickets(250, "CN2", "Child Hot Dog", 2.00, new DateTime(2016, 6, 11, 0, 0, 0)).map(TicketManager.enrichTicketWithQrCode)
-val tl_cm: List[Ticket] = TicketManager.generateTickets(250, "CM", "Child (< 4 yrs) Free", 0.00, new DateTime(2016, 6, 11, 0, 0, 0)).map(TicketManager.enrichTicketWithQrCode)
+val tl_cm: List[Ticket] = TicketManager.generateTickets(250, "CM", "Child (younger than 4yrs) Free", 0.00, new DateTime(2016, 6, 11, 0, 0, 0)).map(TicketManager.enrichTicketWithQrCode)
+
 
 //Enrich tickets with QrCode
 //val enrichedTickets = TicketManager.enrichedTicketsWithQrCode(tl_ac)
@@ -57,26 +58,27 @@ TicketsDao.create(tl_cn2)
 TicketsDao.create(tl_cm)
 println("Tickets added to database")
 
-implicit val fout1 = new FileOutputStream(new File("/tmp/chelford_pta/scribus/temp_tl_ac.csv"))
-TicketManager.writeToCSVFile(tl_ac)(fout1)
+implicit val fout1 = new OutputStreamWriter(new FileOutputStream(new File("/tmp/chelford_pta/scribus/temp_tl_ac.csv")),"UTF-8")
+TicketManager.writeToCSVFile(tl_ac, 5)(fout1)
 fout1.close()
-implicit val fout2 = new FileOutputStream(new File("/tmp/chelford_pta/scribus/temp_tl_an.csv"))
-TicketManager.writeToCSVFile(tl_an)(fout2)
+
+implicit val fout2 = new OutputStreamWriter(new FileOutputStream(new File("/tmp/chelford_pta/scribus/temp_tl_an.csv")),"UTF-8")
+TicketManager.writeToCSVFile(tl_an,5)(fout2)
 fout2.close()
-implicit val fout3 = new FileOutputStream(new File("/tmp/chelford_pta/scribus/temp_tl_cc1.csv"))
-TicketManager.writeToCSVFile(tl_cc1)(fout3)
+implicit val fout3 = new OutputStreamWriter(new FileOutputStream(new File("/tmp/chelford_pta/scribus/temp_tl_cc1.csv")),"UTF-8")
+TicketManager.writeToCSVFile(tl_cc1,5)(fout3)
 fout3.close()
-implicit val fout4 = new FileOutputStream(new File("/tmp/chelford_pta/scribus/temp_tl_cc2.csv"))
-TicketManager.writeToCSVFile(tl_cc2)(fout4)
+implicit val fout4 = new OutputStreamWriter(new FileOutputStream(new File("/tmp/chelford_pta/scribus/temp_tl_cc2.csv")),"UTF-8")
+TicketManager.writeToCSVFile(tl_cc2,5)(fout4)
 fout4.close()
-implicit val fout5 = new FileOutputStream(new File("/tmp/chelford_pta/scribus/temp_tl_cn1.csv"))
-TicketManager.writeToCSVFile(tl_cn1)(fout5)
+implicit val fout5 = new OutputStreamWriter(new FileOutputStream(new File("/tmp/chelford_pta/scribus/temp_tl_cn1.csv")),"UTF-8")
+TicketManager.writeToCSVFile(tl_cn1,5)(fout5)
 fout5.close()
-implicit val fout6 = new FileOutputStream(new File("/tmp/chelford_pta/scribus/temp_tl_cn2.csv"))
-TicketManager.writeToCSVFile(tl_cn2)(fout6)
+implicit val fout6 = new OutputStreamWriter(new FileOutputStream(new File("/tmp/chelford_pta/scribus/temp_tl_cn2.csv")),"UTF-8")
+TicketManager.writeToCSVFile(tl_cn2,5)(fout6)
 fout6.close()
-implicit val fout7 = new FileOutputStream(new File("/tmp/chelford_pta/scribus/temp_tl_cm.csv"))
-TicketManager.writeToCSVFile(tl_cm)(fout7)
+implicit val fout7 =new OutputStreamWriter( new FileOutputStream(new File("/tmp/chelford_pta/scribus/temp_tl_cm.csv")),"UTF-8")
+TicketManager.writeToCSVFile(tl_cm,5)(fout7)
 fout7.close()
 
 
